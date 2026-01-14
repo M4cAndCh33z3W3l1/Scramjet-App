@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MacAndCheese Unblocker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="starfield-container"></div>
+
+    <!-- LANDING PAGE -->
+    <div id="landing-view" class="container">
+        <div class="header">
+            <h1>Welcome To <span class="highlight">MacAndCheese Unblocker</span>.</h1>
+            <p>A new era of unblocking. Fast. Minimal. Secure.</p>
+        </div>
+        <button class="main-btn" onclick="openBrowser()">Start Unblocking</button>
+    </div>
+
+    <!-- BROWSER INTERFACE -->
+    <div id="browser-view" class="browser-container" style="display: none;">
+        <aside class="browser-sidebar">
+            <div title="Home" onclick="openLanding()">
+                <svg class="side-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </div>
+            <div title="Ultraviolet Proxy" id="uv-btn" class="active" onclick="setProxy('uv')">
+                <svg class="side-icon active" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+            </div>
+            <div title="Scramjet Proxy" id="sj-btn" onclick="setProxy('sj')">
+                <svg class="side-icon" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+            </div>
+            <div title="Settings">
+                <svg class="side-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.46c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.46c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.21.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </div>
+        </aside>
+
+        <main class="browser-main">
+            <header class="browser-header">
+                <div id="tab-bar" class="tab-bar"></div>
+                <button class="main-btn" style="padding: 5px 15px; margin: 0;" onclick="addNewTab()">+</button>
+            </header>
+            <div class="browser-controls">
+                <input type="text" id="browserOmnibar" placeholder="Enter URL or Search..." onkeydown="handleOmnibar(event)">
+            </div>
+            <div id="tab-content-area" class="tab-content"></div>
+        </main>
+    </div>
+
+    <script>
+        let tabs = [];
+        let activeTabId = null;
+        let proxyMode = 'uv';
+
+        function setProxy(mode) {
+            proxyMode = mode;
+            document.querySelectorAll('.side-icon').forEach(i => i.classList.remove('active'));
+            document.getElementById(mode + '-btn').querySelector('.side-icon').classList.add('active');
+        }
+
+        function openBrowser() {
+            document.getElementById('landing-view').style.display = 'none';
+            document.getElementById('browser-view').style.display = 'flex';
+            if (tabs.length === 0) addNewTab();
+        }
+
+        function openLanding() {
+            document.getElementById('landing-view').style.display = 'flex';
+            document.getElementById('browser-view').style.display = 'none';
+        }
+
+        function addNewTab() {
+            const id = 'tab-' + Date.now();
+            tabs.push({ id, url: '', title: 'New Tab' });
+            switchTab(id);
+        }
+
+        function switchTab(id) {
+            activeTabId = id;
+            const tab = tabs.find(t => t.id === id);
+            document.getElementById('browserOmnibar').value = tab.url;
+            renderTabs();
+            updateContent();
+        }
+
+        function renderTabs() {
+            const bar = document.getElementById('tab-bar');
+            bar.innerHTML = '';
+            tabs.forEach(tab => {
+                const div = document.createElement('div');
+                div.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
+                div.innerHTML = `<span>${tab.title || 'New Tab'}</span>`;
+                div.onclick = () => switchTab(tab.id);
+                bar.appendChild(div);
+            });
+        }
+
+        function handleOmnibar(e) {
+            if (e.key === 'Enter') {
+                let url = e.target.value;
+                if (!url.startsWith('http')) url = 'https://' + url;
+                const tab = tabs.find(t => t.id === activeTabId);
+                tab.url = url;
+                tab.title = url.replace('https://', '').split('/')[0];
+                renderTabs();
+                updateContent();
+            }
+        }
+
+        function updateContent() {
+            const tab = tabs.find(t => t.id === activeTabId);
+            const area = document.getElementById('tab-content-area');
+            // Adding a small delay for the animation to feel smoother
+            area.innerHTML = ''; 
+            const pane = document.createElement('div');
+            pane.className = 'tab-pane';
+            
+            if (tab.url === '') {
+                pane.innerHTML = `<div class="new-tab-screen"><h1>Using ${proxyMode.toUpperCase()}</h1><p>Type a URL above to start browsing</p></div>`;
+            } else {
+                // Pointing to TitaniumNetwork UV / Scramjet paths
+                let proxyUrl = proxyMode === 'uv' ? `/service/${btoa(tab.url)}` : `/scramjet/${tab.url}`;
+                pane.innerHTML = `<iframe src="${proxyUrl}" style="width:100%; height:100%; border:none; background:white;"></iframe>`;
+            }
+            area.appendChild(pane);
+        }
+
+        function createStars() {
+            const container = document.getElementById('starfield-container');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.setProperty('--max-opacity', Math.random() * 0.7 + 0.3);
+                star.style.animation = `floatUp ${Math.random() * 10 + 5}s linear infinite`;
+                container.appendChild(star);
+            }
+        }
+        createStars();
+    </script>
+</body>
+</html>
